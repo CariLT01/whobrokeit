@@ -53,6 +53,7 @@ class BinarySearchIsolation(IsolationAlgorithm):
         self.cache = self._deserialize_cache(data["cache"])
         self.candidate = data["candidate"]
         self.current = data["current"]
+        self.stack = data.get("stack", [])
 
         return True
 
@@ -90,8 +91,9 @@ class BinarySearchIsolation(IsolationAlgorithm):
 
         if len(self.all_units.keys()) <= 2:
             return list(self.all_units.keys())
-
-        self.stack = [list(self.all_units.keys())]
+        
+        if not self.stack:
+            self.stack = [list(self.all_units.keys())]
 
         while self.stack:
 
@@ -108,11 +110,13 @@ class BinarySearchIsolation(IsolationAlgorithm):
             left_result = self._execute_test(left)
             right_result = self._execute_test(right)
 
-            if not left_result and right_result:
+            # If left fails and right passes, the culprit is in left
+            if left_result is False and right_result is True:
                 self.stack.append(left)
                 continue
 
-            if left_result and not right_result:
+            # If left passes and right fails, the culprit is in right
+            if left_result is True and right_result is False:
                 self.stack.append(right)
                 continue
 
