@@ -1,0 +1,23 @@
+# Ignore __pycache__
+
+/__pycache__
+
+# Ignore runtime data
+
+temp/*
+/temp copy
+
+# Ignore misc files
+gpu_usage_test.py
+launch_command_raw.json
+launch_command.json
+launch_command.txt
+
+manual_dependencies.json
+original_stuff.txtg
+save_states copy 2.json
+save_states copy.json
+save_states.json
+suspected_mods.json
+thigs.txt
+units.json
