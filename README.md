@@ -10,6 +10,14 @@ This small tool will automatically run tests to pinpoint the exact mod or combin
 > [!WARNING]
 > **This tool is in a very experimental stage! It currently ONLY SUPPORTS NEOFORGE.**
 
+# Features
+
+- **Fast testing**: Launches the game automatically and uses keybinds instead of a dialog for faster speeds
+- **Fast Isolation**: Uses early binary search pruning and the industrial standard QuickXPlain for fast and reliable isolation
+- **N-Way conflict support**: Supports N-Way conflicts in mod folders
+- **Ease of use**: Launch your game normally for the tool to detect the metadata required for launching automatically
+
+
 ## How to use
 
 (installation instructions coming *soon*)
