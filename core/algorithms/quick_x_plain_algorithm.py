@@ -47,6 +47,35 @@ class QuickXPlainIsolation(IsolationAlgorithm):
         self.results: list[list[str]] = []
         self.save_func = save_func
 
+    def _compute_dependency_depth(self, units: list[ModUnitInfo]) -> dict[str, int]:
+        # Map root_jar -> unit
+        jar_to_unit = {u["root_jar"]: u for u in units}
+        # Build graph: dependent -> list of dependency root_jars
+        graph = {}
+        for u in units:
+            dep_roots = []
+            for jar in u.get("jars", []):
+                if jar in jar_to_unit and jar != u["root_jar"]:
+                    dep_roots.append(jar)
+            graph[u["root_jar"]] = dep_roots
+
+        # Compute depth (distance to farthest leaf)
+        depth = {}
+        def dfs(node):
+            if node in depth:
+                return depth[node]
+            deps = graph.get(node, [])
+            if not deps:
+                depth[node] = 0
+                return 0
+            max_dep_depth = max((dfs(dep) for dep in deps), default=-1)
+            depth[node] = max_dep_depth + 1
+            return depth[node]
+
+        for node in graph:
+            dfs(node)
+        return depth
+
     def run(
         self,
         units: list[ModUnitInfo],
@@ -54,11 +83,15 @@ class QuickXPlainIsolation(IsolationAlgorithm):
         load_state: Any | None,
     ):
 
-        self.all_units = {unit["root_jar"]: unit for unit in units}
+        depth_map = self._compute_dependency_depth(units)
+        sorted_units = sorted(units, key=lambda u: (depth_map.get(u["root_jar"], 0), u["root_jar"]))
+        self.all_units = {unit["root_jar"]: unit for unit in sorted_units}
         self.test_func = test_function
         self.cache: dict[frozenset[str], bool] = {}
         self.stack: list[StackFrame] = []
         self.results: list[list[str]] = []
+        
+        print(f"QXP received an initial input size of: {len(units)}")
 
         results = self.qxp_run(load_state)
 

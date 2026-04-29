@@ -88,21 +88,33 @@ class BinarySearchIsolation(IsolationAlgorithm):
         return result
 
     def _binary_isolate(self) -> list[str]:
-
-        if len(self.all_units.keys()) <= 2:
-            return list(self.all_units.keys())
-        
         if not self.stack:
             self.stack = [list(self.all_units.keys())]
 
         while self.stack:
-
             current_value = self.stack.pop()
             self.current = current_value
 
-            if len(current_value) <= 2:
+            # Base case: single element → it's the culprit
+            if len(current_value) == 1:
                 return current_value
 
+            # Base case: two elements → test each individually
+            if len(current_value) == 2:
+                a, b = current_value[0], current_value[1]
+                result_a = self._execute_test([a])
+                result_b = self._execute_test([b])
+
+                # Only a fails
+                if not result_a and result_b:
+                    return [a]
+                # Only b fails
+                if result_a and not result_b:
+                    return [b]
+                # Both pass (interaction) or both fail (two culprits)
+                return current_value
+
+            # Split larger sets
             mid = len(current_value) // 2
             left = current_value[:mid]
             right = current_value[mid:]
@@ -110,17 +122,17 @@ class BinarySearchIsolation(IsolationAlgorithm):
             left_result = self._execute_test(left)
             right_result = self._execute_test(right)
 
-            # If left fails and right passes, the culprit is in left
+            # Culprit is only in left half
             if left_result is False and right_result is True:
                 self.stack.append(left)
                 continue
-
-            # If left passes and right fails, the culprit is in right
+            # Culprit is only in right half
             if left_result is True and right_result is False:
                 self.stack.append(right)
                 continue
 
-            # Unknown structure, stop search
-            return self.current
+            # Ambiguous: both pass (interaction), both fail (multiple culprits),
+            # or any other non‑monotonic result → return the whole current set
+            return current_value
 
         return list(self.all_units.keys())
